@@ -57,8 +57,10 @@ class HingeUiStateTest {
             smoothedAngle = 90f,
         )
 
-        assertThat(state.fx).isEqualTo(FoldFxParams.fromAngle(90f))
-        assertThat(state.fx.hingeShadow).isGreaterThan(0.4f)
+        assertThat(state.fx).isEqualTo(
+            FoldFxParams.compose(0.5f, FoldStyle.FLUID, FoldFxParams.DEFAULT_STRENGTH),
+        )
+        assertThat(state.fx.hingeShadow).isGreaterThan(0f)
     }
 
     @Test

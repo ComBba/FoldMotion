@@ -29,8 +29,10 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.foldmotion.app.hinge.FoldStyle
 import com.foldmotion.app.hinge.HingeUiState
 import com.foldmotion.app.overlay.OverlayPolicy
+import com.foldmotion.app.overlay.OverlaySettings
 
 @Composable
 fun HingeProbeRoute(
@@ -47,6 +49,9 @@ fun HingeProbeRoute(
         canDrawOverlays = canDrawOverlays,
         onSelectPreset = viewModel::selectPreset,
         onToggleOverlay = onToggleOverlay,
+        onSelectStyle = viewModel::setStyle,
+        onSelectStrength = viewModel::setStrength,
+        onToggleHaptic = viewModel::setHapticEnabled,
         modifier = modifier,
     )
 }
@@ -58,6 +63,9 @@ fun HingeProbeScreen(
     canDrawOverlays: Boolean,
     onSelectPreset: (Float?) -> Unit,
     onToggleOverlay: (Boolean) -> Unit,
+    onSelectStyle: (FoldStyle) -> Unit,
+    onSelectStrength: (Float) -> Unit,
+    onToggleHaptic: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val fx = state.fx
@@ -96,6 +104,9 @@ fun HingeProbeScreen(
             canDrawOverlays = canDrawOverlays,
             onSelectPreset = onSelectPreset,
             onToggleOverlay = onToggleOverlay,
+            onSelectStyle = onSelectStyle,
+            onSelectStrength = onSelectStrength,
+            onToggleHaptic = onToggleHaptic,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .windowInsetsPadding(WindowInsets.navigationBars),
@@ -110,6 +121,9 @@ private fun DebugHud(
     canDrawOverlays: Boolean,
     onSelectPreset: (Float?) -> Unit,
     onToggleOverlay: (Boolean) -> Unit,
+    onSelectStyle: (FoldStyle) -> Unit,
+    onSelectStrength: (Float) -> Unit,
+    onToggleHaptic: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -124,7 +138,7 @@ private fun DebugHud(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
-                text = "FoldMotion M3",
+                text = "FoldMotion M4",
                 color = Color.White,
                 style = MaterialTheme.typography.titleSmall,
             )
@@ -163,6 +177,38 @@ private fun DebugHud(
                 )
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FoldStyle.entries.forEach { style ->
+                    FilterChip(
+                        selected = state.style == style,
+                        onClick = { onSelectStyle(style) },
+                        label = { Text(styleLabel(style)) },
+                    )
+                }
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OverlaySettings.STRENGTH_PRESETS.forEach { (label, value) ->
+                    FilterChip(
+                        selected = kotlin.math.abs(state.strength - value) < 0.001f,
+                        onClick = { onSelectStrength(value) },
+                        label = { Text(label) },
+                    )
+                }
+            }
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Switch(
+                    checked = state.hapticEnabled,
+                    onCheckedChange = onToggleHaptic,
+                )
+                Text(
+                    text = "햅틱",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.debugPresetDegrees == null,
                     onClick = { onSelectPreset(null) },
@@ -177,6 +223,15 @@ private fun DebugHud(
                 }
             }
         }
+    }
+}
+
+private fun styleLabel(style: FoldStyle): String {
+    return when (style) {
+        FoldStyle.FLUID -> "Fluid"
+        FoldStyle.HINGE_SHADOW -> "Shadow"
+        FoldStyle.FADE -> "Fade"
+        FoldStyle.HAPTIC -> "Haptic"
     }
 }
 

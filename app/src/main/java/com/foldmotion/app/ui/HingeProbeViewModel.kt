@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.foldmotion.app.hinge.FoldAngleSmoother
+import com.foldmotion.app.hinge.FoldStyle
 import com.foldmotion.app.hinge.HingeAngleSource
 import com.foldmotion.app.hinge.HingeUiState
 import com.foldmotion.app.overlay.OverlayDesiredStore
@@ -20,12 +21,7 @@ class HingeProbeViewModel(
     private val hingeAngleSource: HingeAngleSource,
     private val overlayDesiredStore: OverlayDesiredStore,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(
-        HingeUiState(
-            overlayDesired = overlayDesiredStore.isDesired(),
-            debugPresetDegrees = OverlayInput.debugPresetDegrees.value,
-        ),
-    )
+    private val _state = MutableStateFlow(initialState())
     val state: StateFlow<HingeUiState> = _state
     private var smoother = FoldAngleSmoother.idle(180f)
     private var lastTarget: Float? = null
@@ -34,6 +30,18 @@ class HingeProbeViewModel(
         viewModelScope.launch {
             hingeAngleSource.observe().collect { availability ->
                 _state.update { it.copy(availability = availability) }
+            }
+        }
+        viewModelScope.launch {
+            OverlayInput.settings.collect { settings ->
+                _state.update {
+                    it.copy(
+                        overlayDesired = settings.enabled,
+                        style = settings.style,
+                        strength = settings.strength,
+                        hapticEnabled = settings.hapticEnabled,
+                    )
+                }
             }
         }
         viewModelScope.launch {
@@ -51,7 +59,29 @@ class HingeProbeViewModel(
 
     fun setOverlayDesired(enabled: Boolean) {
         overlayDesiredStore.setDesired(enabled)
-        _state.update { it.copy(overlayDesired = enabled) }
+    }
+
+    fun setStyle(style: FoldStyle) {
+        overlayDesiredStore.setStyle(style)
+    }
+
+    fun setStrength(strength: Float) {
+        overlayDesiredStore.setStrength(strength)
+    }
+
+    fun setHapticEnabled(enabled: Boolean) {
+        overlayDesiredStore.setHapticEnabled(enabled)
+    }
+
+    private fun initialState(): HingeUiState {
+        val settings = overlayDesiredStore.snapshot()
+        return HingeUiState(
+            overlayDesired = settings.enabled,
+            debugPresetDegrees = OverlayInput.debugPresetDegrees.value,
+            style = settings.style,
+            strength = settings.strength,
+            hapticEnabled = settings.hapticEnabled,
+        )
     }
 
     private fun tickSmoother(nowMs: Long) {
