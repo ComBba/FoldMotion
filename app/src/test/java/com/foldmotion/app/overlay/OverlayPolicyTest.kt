@@ -31,4 +31,11 @@ class OverlayPolicyTest {
         assertThat(OverlayPolicy.shouldDrawPreviewFx(overlayAttached = true)).isFalse()
         assertThat(OverlayPolicy.shouldDrawPreviewFx(overlayAttached = false)).isTrue()
     }
+
+    @Test
+    fun foregroundServiceFollowsAttachPolicy() {
+        assertThat(OverlayPolicy.shouldRunForegroundService(enabled = true, canDrawOverlays = true)).isTrue()
+        assertThat(OverlayPolicy.shouldRunForegroundService(enabled = true, canDrawOverlays = false)).isFalse()
+        assertThat(OverlayPolicy.shouldRunForegroundService(enabled = false, canDrawOverlays = true)).isFalse()
+    }
 }

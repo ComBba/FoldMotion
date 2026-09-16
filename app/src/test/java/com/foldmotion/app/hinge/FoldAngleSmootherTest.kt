@@ -41,4 +41,15 @@ class FoldAngleSmootherTest {
         assertThat(second.sample(nowMs = 100L)).isWithin(0.01f).of(mid)
         assertThat(second.sample(nowMs = 300L)).isEqualTo(90f)
     }
+
+    @Test
+    fun isSettledAfterDurationAndWhileIdle() {
+        val idle = FoldAngleSmoother.idle(180f)
+        assertThat(idle.isSettled(nowMs = 0L)).isTrue()
+
+        val inFlight = idle.retarget(90f, nowMs = 1_000L, durationMs = 280L)
+        assertThat(inFlight.isSettled(nowMs = 1_000L)).isFalse()
+        assertThat(inFlight.isSettled(nowMs = 1_279L)).isFalse()
+        assertThat(inFlight.isSettled(nowMs = 1_280L)).isTrue()
+    }
 }

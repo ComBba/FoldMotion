@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="overlay_notification_channel">접힘 효과</string>
+    <string name="overlay_notification_title">FoldMotion 효과가 켜져 있습니다</string>
+    <string name="overlay_notification_text">알림에서 바로 끌 수 있습니다</string>
+    <string name="overlay_notification_stop">끄기</string>
+</resources>

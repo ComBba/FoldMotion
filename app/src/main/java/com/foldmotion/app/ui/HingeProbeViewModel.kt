@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.foldmotion.app.hinge.FoldAngleSmoother
 import com.foldmotion.app.hinge.HingeAngleSource
 import com.foldmotion.app.hinge.HingeUiState
+import com.foldmotion.app.overlay.OverlayDesiredStore
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -16,8 +17,11 @@ import kotlinx.coroutines.launch
 
 class HingeProbeViewModel(
     private val hingeAngleSource: HingeAngleSource,
+    private val overlayDesiredStore: OverlayDesiredStore,
 ) : ViewModel() {
-    private val _state = MutableStateFlow(HingeUiState())
+    private val _state = MutableStateFlow(
+        HingeUiState(overlayDesired = overlayDesiredStore.isDesired()),
+    )
     val state: StateFlow<HingeUiState> = _state
     private var smoother = FoldAngleSmoother.idle(180f)
     private var lastTarget: Float? = null
@@ -41,6 +45,7 @@ class HingeProbeViewModel(
     }
 
     fun setOverlayDesired(enabled: Boolean) {
+        overlayDesiredStore.setDesired(enabled)
         _state.update { it.copy(overlayDesired = enabled) }
     }
 
@@ -60,10 +65,11 @@ class HingeProbeViewModel(
 
     class Factory(
         private val hingeAngleSource: HingeAngleSource,
+        private val overlayDesiredStore: OverlayDesiredStore,
     ) : ViewModelProvider.Factory {
         @Suppress("UNCHECKED_CAST")
         override fun <T : ViewModel> create(modelClass: Class<T>): T {
-            return HingeProbeViewModel(hingeAngleSource) as T
+            return HingeProbeViewModel(hingeAngleSource, overlayDesiredStore) as T
         }
     }
 }

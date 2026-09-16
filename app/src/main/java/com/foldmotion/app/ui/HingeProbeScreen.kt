@@ -124,7 +124,7 @@ private fun DebugHud(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
-                text = "FoldMotion M2",
+                text = "FoldMotion M3",
                 color = Color.White,
                 style = MaterialTheme.typography.titleSmall,
             )
@@ -157,7 +157,7 @@ private fun DebugHud(
                     onCheckedChange = onToggleOverlay,
                 )
                 Text(
-                    text = "시스템 Overlay",
+                    text = "상주 Overlay",
                     color = Color.White,
                     style = MaterialTheme.typography.bodyMedium,
                 )
@@ -186,7 +186,7 @@ private fun overlayStatus(
     overlayDesired: Boolean,
 ): String {
     return when {
-        overlayAttached -> "OVERLAY ON  TOUCH-THROUGH"
+        overlayAttached -> "FGS ON  TOUCH-THROUGH"
         overlayDesired && !canDrawOverlays -> "OVERLAY 권한 필요"
         overlayDesired -> "OVERLAY 대기"
         else -> "OVERLAY OFF"
