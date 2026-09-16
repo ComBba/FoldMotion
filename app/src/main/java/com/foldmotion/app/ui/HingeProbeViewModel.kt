@@ -8,6 +8,7 @@ import com.foldmotion.app.hinge.FoldAngleSmoother
 import com.foldmotion.app.hinge.HingeAngleSource
 import com.foldmotion.app.hinge.HingeUiState
 import com.foldmotion.app.overlay.OverlayDesiredStore
+import com.foldmotion.app.overlay.OverlayInput
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -41,6 +42,7 @@ class HingeProbeViewModel(
     }
 
     fun selectPreset(degrees: Float?) {
+        OverlayInput.debugPresetDegrees.value = degrees
         _state.update { it.copy(debugPresetDegrees = degrees) }
     }
 

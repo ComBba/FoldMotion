@@ -26,10 +26,13 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 
 class FoldOverlayService : Service() {
     private val job = SupervisorJob()
@@ -41,6 +44,7 @@ class FoldOverlayService : Service() {
     private var lastTarget: Float? = null
     private var lastFx: FoldFxParams? = null
     private var latestAngle: Float? = null
+    private val wake = MutableSharedFlow<Unit>()
 
     override fun onCreate() {
         super.onCreate()
@@ -82,11 +86,18 @@ class FoldOverlayService : Service() {
             launch {
                 source.observe().collect { availability ->
                     latestAngle = (availability as? HingeAvailability.Present)?.angleDegrees
+                    wake.tryEmit(Unit)
                 }
+            }
+            launch {
+                OverlayInput.debugPresetDegrees.collect { wake.tryEmit(Unit) }
             }
             while (isActive) {
                 val now = SystemClock.uptimeMillis()
-                val target = latestAngle
+                val target = OverlayInput.overlayAngle(
+                    OverlayInput.debugPresetDegrees.value,
+                    latestAngle,
+                )
                 if (target != null) {
                     if (target != lastTarget) {
                         smoother = if (lastTarget == null) {
@@ -102,7 +113,13 @@ class FoldOverlayService : Service() {
                         lastFx = fx
                     }
                 }
-                delay(OverlayTickPolicy.delayMs(smoother.isSettled(now)))
+                if (smoother.isSettled(now)) {
+                    withTimeoutOrNull(OverlayTickPolicy.IDLE_DELAY_MS) {
+                        wake.first()
+                    }
+                } else {
+                    delay(OverlayTickPolicy.ANIMATING_DELAY_MS)
+                }
             }
         }
     }

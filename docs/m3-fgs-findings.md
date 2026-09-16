@@ -10,7 +10,7 @@
 - `HOME` 이후에도 pid·FGS·Overlay 창이 유지된다.
 - `am kill com.foldmotion.app`은 FGS 프로세스를 죽이지 못한다 (force-stop은 제외 — FGS까지 내린다).
 - 지속 알림 채널 `fold_overlay`, 액션 **끄기** → `PendingIntent.getService(ACTION_STOP)`.
-- 접힘 움직임이 없으면 Overlay 파라미터 publish를 건너뛰고 tick을 250ms로 낮춘다.
+- 접힘 움직임이 없으면 Overlay 파라미터 publish를 건너뛰고, 새 힌지 샘플이 오면 즉시 보간을 다시 시작한다 (유휴 대기는 interruptible).
 
 ## 의도적으로 안 한 것
 
