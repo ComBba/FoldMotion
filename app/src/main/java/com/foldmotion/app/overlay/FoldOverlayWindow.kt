@@ -2,6 +2,8 @@ package com.foldmotion.app.overlay
 
 import android.content.Context
 import android.graphics.PixelFormat
+import android.hardware.input.InputManager
+import android.os.Build
 import android.view.ContextThemeWrapper
 import android.view.Gravity
 import android.view.View
@@ -67,11 +69,18 @@ class FoldOverlayWindow(
         ).apply {
             gravity = Gravity.TOP or Gravity.START
             title = OVERLAY_TITLE
+            alpha = maxTouchThroughAlpha(appContext)
         }
     }
 
     companion object {
         const val OVERLAY_TITLE = "FoldMotionOverlay"
+
+        internal fun maxTouchThroughAlpha(context: Context): Float {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return 1f
+            return context.getSystemService(InputManager::class.java)
+                .maximumObscuringOpacityForTouch
+        }
     }
 }
 
