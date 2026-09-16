@@ -11,7 +11,7 @@
 
     <application
         android:name=".FoldMotionApp"
-        android:allowBackup="true"
+        android:allowBackup="false"
         android:icon="@android:drawable/ic_menu_compass"
         android:label="FoldMotion"
         android:resizeableActivity="true"

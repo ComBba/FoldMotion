@@ -9,7 +9,7 @@ FoldMotion은 계정을 만들지 않으며, 이름·이메일·위치·광고 I
 
 앱은 기기의 힌지 각도 센서 값을 **기기 안에서만** 읽어 시각 효과와 햅틱을 계산합니다. 이 값은 서버로 전송되지 않습니다.
 
-설정(효과 켜짐, 스타일, 강도, 햅틱)은 기기 로컬 `SharedPreferences`에만 저장됩니다.
+설정(효과 켜짐, 스타일, 강도, 햅틱)은 기기 로컬 `SharedPreferences`에만 저장됩니다. 앱은 Android Auto Backup을 쓰지 않습니다 (`allowBackup=false`).
 
 ## 권한
 
