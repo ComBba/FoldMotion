@@ -2,7 +2,7 @@
 
 Galaxy Z Fold의 힌지 각도에 맞춰 접힘 순간에만 시각 효과를 얹는 앱입니다. One UI Home을 바꾸지 않고, 루트·접근성·SystemUI 해킹도 쓰지 않습니다.
 
-현재 마일스톤: **M3 상주 Foreground Service**. 최근 앱에서 쓸어도 Overlay가 유지되고, 알림에서 끌 수 있습니다. 다음은 **M4 V1 스타일 4종**.
+현재 마일스톤: **M4 V1 스타일 4종**. Fluid / Shadow / Fade / Haptic, 강도, 햅틱 토글. 다음은 **M5 스토어 출시**.
 
 ## 제품 원칙
 

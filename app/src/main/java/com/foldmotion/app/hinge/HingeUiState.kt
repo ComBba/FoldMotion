@@ -11,6 +11,9 @@ data class HingeUiState(
     val debugPresetDegrees: Float? = null,
     val smoothedAngle: Float? = null,
     val overlayDesired: Boolean = false,
+    val style: FoldStyle = FoldStyle.DEFAULT,
+    val strength: Float = FoldFxParams.DEFAULT_STRENGTH,
+    val hapticEnabled: Boolean = false,
 ) {
     val rawAngle: Float?
         get() = debugPresetDegrees
@@ -23,7 +26,7 @@ data class HingeUiState(
         get() = displayedAngle?.let(FoldProgress::fromAngle)
 
     val fx: FoldFxParams
-        get() = FoldFxParams.fromProgress(progress ?: 0f)
+        get() = FoldFxParams.compose(progress ?: 0f, style, strength)
 
     val sensorLabel: String
         get() = when (availability) {
