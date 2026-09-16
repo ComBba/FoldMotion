@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.layout.Row
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.Switch
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -28,16 +30,23 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.foldmotion.app.hinge.HingeUiState
+import com.foldmotion.app.overlay.OverlayPolicy
 
 @Composable
 fun HingeProbeRoute(
     viewModel: HingeProbeViewModel,
+    overlayAttached: Boolean,
+    canDrawOverlays: Boolean,
+    onToggleOverlay: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     HingeProbeScreen(
         state = state,
+        overlayAttached = overlayAttached,
+        canDrawOverlays = canDrawOverlays,
         onSelectPreset = viewModel::selectPreset,
+        onToggleOverlay = onToggleOverlay,
         modifier = modifier,
     )
 }
@@ -45,7 +54,10 @@ fun HingeProbeRoute(
 @Composable
 fun HingeProbeScreen(
     state: HingeUiState,
+    overlayAttached: Boolean,
+    canDrawOverlays: Boolean,
     onSelectPreset: (Float?) -> Unit,
+    onToggleOverlay: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val fx = state.fx
@@ -61,7 +73,9 @@ fun HingeProbeScreen(
                     alpha = fx.contentAlpha
                 },
         )
-        FoldFxOverlay(params = fx)
+        if (OverlayPolicy.shouldDrawPreviewFx(overlayAttached)) {
+            FoldFxOverlay(params = fx)
+        }
         if (fx.coverReveal > 0f) {
             Box(
                 modifier = Modifier
@@ -78,7 +92,10 @@ fun HingeProbeScreen(
         }
         DebugHud(
             state = state,
+            overlayAttached = overlayAttached,
+            canDrawOverlays = canDrawOverlays,
             onSelectPreset = onSelectPreset,
+            onToggleOverlay = onToggleOverlay,
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .windowInsetsPadding(WindowInsets.navigationBars),
@@ -89,7 +106,10 @@ fun HingeProbeScreen(
 @Composable
 private fun DebugHud(
     state: HingeUiState,
+    overlayAttached: Boolean,
+    canDrawOverlays: Boolean,
     onSelectPreset: (Float?) -> Unit,
+    onToggleOverlay: (Boolean) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Surface(
@@ -104,7 +124,7 @@ private fun DebugHud(
             verticalArrangement = Arrangement.spacedBy(6.dp),
         ) {
             Text(
-                text = "FoldMotion M1",
+                text = "FoldMotion M2",
                 color = Color.White,
                 style = MaterialTheme.typography.titleSmall,
             )
@@ -121,6 +141,27 @@ private fun DebugHud(
                 fontFamily = FontFamily.Monospace,
                 style = MaterialTheme.typography.bodySmall,
             )
+            Text(
+                text = overlayStatus(overlayAttached, canDrawOverlays, state.overlayDesired),
+                modifier = Modifier.testTag("overlay_status"),
+                color = Color.White.copy(alpha = 0.78f),
+                fontFamily = FontFamily.Monospace,
+                style = MaterialTheme.typography.bodySmall,
+            )
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+                Switch(
+                    checked = state.overlayDesired,
+                    onCheckedChange = onToggleOverlay,
+                )
+                Text(
+                    text = "시스템 Overlay",
+                    color = Color.White,
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+            }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilterChip(
                     selected = state.debugPresetDegrees == null,
@@ -136,6 +177,19 @@ private fun DebugHud(
                 }
             }
         }
+    }
+}
+
+private fun overlayStatus(
+    overlayAttached: Boolean,
+    canDrawOverlays: Boolean,
+    overlayDesired: Boolean,
+): String {
+    return when {
+        overlayAttached -> "OVERLAY ON  TOUCH-THROUGH"
+        overlayDesired && !canDrawOverlays -> "OVERLAY 권한 필요"
+        overlayDesired -> "OVERLAY 대기"
+        else -> "OVERLAY OFF"
     }
 }
 

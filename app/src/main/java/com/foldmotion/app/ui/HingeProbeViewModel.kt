@@ -40,6 +40,10 @@ class HingeProbeViewModel(
         _state.update { it.copy(debugPresetDegrees = degrees) }
     }
 
+    fun setOverlayDesired(enabled: Boolean) {
+        _state.update { it.copy(overlayDesired = enabled) }
+    }
+
     private fun tickSmoother(nowMs: Long) {
         val target = _state.value.rawAngle ?: return
         if (target != lastTarget) {
