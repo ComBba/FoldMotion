@@ -10,6 +10,7 @@ data class HingeUiState(
     val availability: HingeAvailability = HingeAvailability.Unknown,
     val debugPresetDegrees: Float? = null,
     val smoothedAngle: Float? = null,
+    val overlayDesired: Boolean = false,
 ) {
     val rawAngle: Float?
         get() = debugPresetDegrees
