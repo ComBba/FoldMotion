@@ -21,7 +21,10 @@ class HingeProbeViewModel(
     private val overlayDesiredStore: OverlayDesiredStore,
 ) : ViewModel() {
     private val _state = MutableStateFlow(
-        HingeUiState(overlayDesired = overlayDesiredStore.isDesired()),
+        HingeUiState(
+            overlayDesired = overlayDesiredStore.isDesired(),
+            debugPresetDegrees = OverlayInput.debugPresetDegrees.value,
+        ),
     )
     val state: StateFlow<HingeUiState> = _state
     private var smoother = FoldAngleSmoother.idle(180f)
