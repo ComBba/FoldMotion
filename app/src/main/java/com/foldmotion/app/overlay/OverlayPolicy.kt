@@ -16,4 +16,8 @@ object OverlayPolicy {
     fun shouldDrawPreviewFx(overlayAttached: Boolean): Boolean {
         return !overlayAttached
     }
+
+    fun shouldRunForegroundService(enabled: Boolean, canDrawOverlays: Boolean): Boolean {
+        return resolve(enabled, canDrawOverlays) == OverlayAttachResult.ATTACHED
+    }
 }

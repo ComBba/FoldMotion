@@ -30,6 +30,10 @@ data class FoldAngleSmoother(
         return from + (target - from) * t
     }
 
+    fun isSettled(nowMs: Long): Boolean {
+        return from == target || durationMs <= 0L || nowMs >= startedAtMs + durationMs
+    }
+
     companion object {
         const val DEFAULT_DURATION_MS = 280L
 

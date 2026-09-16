@@ -2,7 +2,7 @@
 
 > 출처: [ChatGPT 공유 — 폴드8 애니메이션 구현](https://chatgpt.com/share/6aa9e730-1818-83ee-b67f-323b8c143b8c)  
 > 작성일: 2026-09-16  
-> 현재 코드베이스: M2 Overlay 동작 (Home·Chrome 위 터치 통과). 다음은 M3 상주 서비스.
+> 현재 코드베이스: M3 상주 Foreground Service. 다음은 M4 V1 스타일 4종.
 
 ## 한 줄 목표
 
@@ -142,7 +142,7 @@ M0 센서 Go/No-Go ──► M1 인앱 엔진 ──► M2 Overlay ──► M3 
 
 ## M2 — One UI 위 Overlay
 
-**상태: 착수 준비** — M1 Preview·커버 전원은 앱 안에서 동작. 다음은 다른 앱 위 투명 Overlay.
+**상태: 완료** — 2026-09-16 Home·Chrome 위 터치 통과 Overlay (PR #1).
 
 **목표:** 다른 앱을 쓰는 중에도 접으면 효과가 얹힌다. 터치는 통과한다.  
 **기간:** 4~6일  
@@ -165,7 +165,7 @@ M0 센서 Go/No-Go ──► M1 인앱 엔진 ──► M2 Overlay ──► M3 
 
 - [x] 권한 허용 후 Home/다른 앱 위에서 힌지 동기 효과가 보인다 (2026-09-16 Home·Chrome)
 - [x] 아이콘·버튼을 평소처럼 누를 수 있다 (터치 통과)
-- [ ] 권한 거부 시 앱이 죽지 않고 Preview로 안내한다
+- [x] 권한 거부 시 앱이 죽지 않고 Preview로 안내한다
 
 ### 리스크
 
@@ -175,6 +175,8 @@ M0 센서 Go/No-Go ──► M1 인앱 엔진 ──► M2 Overlay ──► M3 
 ---
 
 ## M3 — 상주 감지 (Foreground Service)
+
+**상태: 구현** — Overlay 소유권은 `FoldOverlayService` (FGS `specialUse`). Activity `onDestroy`에서 Overlay를 떼지 않는다.
 
 **목표:** 앱을 닫아도 힌지를 읽고 효과를 유지한다.  
 **기간:** 4~6일  
@@ -190,9 +192,9 @@ M0 센서 Go/No-Go ──► M1 인앱 엔진 ──► M2 Overlay ──► M3 
 
 ### 완료 조건
 
-- [ ] 최근 앱에서 FoldMotion을 쓸어도 효과가 유지된다
-- [ ] 알림에서 즉시 끌 수 있다
-- [ ] 배터리/발열을 Fold8에서 30분 접었다 펴며 기록한다
+- [x] 최근 앱에서 FoldMotion을 쓸어도 효과가 유지된다 (HOME + `am kill` 후에도 FGS·`FoldMotionOverlay` 유지. 2026-09-16)
+- [x] 알림에서 즉시 끌 수 있다 (지속 알림 액션 **끄기** → `ACTION_STOP`)
+- [ ] 배터리/발열을 Fold8에서 30분 접었다 펴며 기록한다 (병합 비차단. M4 전 기록)
 
 ### 리스크
 
@@ -292,14 +294,8 @@ Good Lock은 일반 개발자 모듈 장터가 아니다. ClockFace 등 삼성�
 | Good Lock 후순위 | 공개 등록 절차가 확인되지 않음. 트래션 후 제안이 현실적 |
 | 센서 먼저 | WindowManager `FoldingFeature`는 연속 각도가 아님. 엔진 설계가 M0 결과에 종속 |
 
-## 다음 실행 — M2 Overlay 착수 메모
+## 다음 실행 — M4 스타일 4종
 
-구현은 승인 후 아래 순서로 간다. 커버 `Presentation`은 Preview Activity에 남기고, Overlay는 **안쪽 기본 디스플레이**에만 얹는다.
+M3 완료 후: Fluid Fold / Hinge Shadow / Fade Fold / Haptic Fold + Strength. 커버 `Presentation`과 DeviceState 경로는 그대로 둔다.
 
-1. `SYSTEM_ALERT_WINDOW` 온보딩 (`Settings.canDrawOverlays` → 설정 화면). 거부 시 Preview만.
-2. `FoldOverlayService` (아직 FGS 아님. M3에서 상주화). Activity가 살아 있는 동안만 Overlay.
-3. `WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY` + `FLAG_NOT_FOCUSABLE | FLAG_NOT_TOUCHABLE | FLAG_LAYOUT_IN_SCREEN | FLAG_NOT_TOUCH_MODAL`.
-4. 기존 `FoldFxOverlay` / `FoldFxParams`를 Overlay `ComposeView`에 재사용. `FakeHomeGrid`는 Preview 전용.
-5. 실기기 검증: Home · Chrome 위에서 90° 접힘, 아이콘 터치 통과, 권한 거부 시 크래시 없음.
-
-건드리지 말 것: Accessibility, 런처 교체, 커버 DeviceState 경로(이미 M1에서 동작).
+건드리지 말 것: Accessibility, 런처 교체, force-stop으로 FGS를 검증하기.
