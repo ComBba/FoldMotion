@@ -102,8 +102,8 @@ private class OverlayComposeHost(
     val view: ComposeView
 
     init {
+        savedStateController.performAttach()
         savedStateController.performRestore(null)
-        lifecycleRegistry.currentState = Lifecycle.State.INITIALIZED
         lifecycleRegistry.currentState = Lifecycle.State.CREATED
         val themed = ContextThemeWrapper(context, R.style.Theme_FoldMotion)
         view = ComposeView(themed).apply {
