@@ -27,6 +27,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -47,7 +48,10 @@ class FoldOverlayService : Service() {
     private var lastFx: FoldFxParams? = null
     private var latestAngle: Float? = null
     private var lastHapticAngle: Float? = null
-    private val wake = MutableSharedFlow<Unit>()
+    private val wake = MutableSharedFlow<Unit>(
+        extraBufferCapacity = 1,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST,
+    )
     private lateinit var hapticPlayer: FoldHapticPlayer
 
     override fun onCreate() {
@@ -91,11 +95,15 @@ class FoldOverlayService : Service() {
             launch {
                 source.observe().collect { availability ->
                     latestAngle = (availability as? HingeAvailability.Present)?.angleDegrees
+                    noteHingeTarget()
                     wake.tryEmit(Unit)
                 }
             }
             launch {
-                OverlayInput.debugPresetDegrees.collect { wake.tryEmit(Unit) }
+                OverlayInput.debugPresetDegrees.collect {
+                    noteHingeTarget()
+                    wake.tryEmit(Unit)
+                }
             }
             launch {
                 OverlayInput.settings.collect { wake.tryEmit(Unit) }
@@ -108,10 +116,6 @@ class FoldOverlayService : Service() {
                     latestAngle,
                 )
                 if (target != null) {
-                    if (FoldHapticPolicy.shouldPulse(lastHapticAngle, target, settings.hapticEnabled)) {
-                        hapticPlayer.pulse()
-                    }
-                    lastHapticAngle = target
                     if (target != lastTarget) {
                         smoother = if (lastTarget == null) {
                             FoldAngleSmoother.idle(target)
@@ -139,6 +143,22 @@ class FoldOverlayService : Service() {
                 }
             }
         }
+    }
+
+    private fun noteHingeTarget() {
+        val target = OverlayInput.overlayAngle(
+            OverlayInput.debugPresetDegrees.value,
+            latestAngle,
+        ) ?: return
+        if (FoldHapticPolicy.shouldPulse(
+                lastHapticAngle,
+                target,
+                OverlayInput.settings.value.hapticEnabled,
+            )
+        ) {
+            hapticPlayer.pulse()
+        }
+        lastHapticAngle = target
     }
 
     private fun startInForeground() {
